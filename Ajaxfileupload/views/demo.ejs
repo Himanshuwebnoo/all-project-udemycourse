@@ -26,25 +26,42 @@
  <div class="nav justify-content-center img">
  </div>
  <script src="/jquery/jquery.js"></script>
- <script>
+
+ <script nonce="<%= nonce %>">
  $(document).ready(function(){
       var fileData;
       var myFile;
       $('#file').change(function(){
+        myFile = $('#file').prop('files')[0];
+                if (myFile.size > 200 * 1024) {
+                    alert('File size exceeds the limit of 200KB.');
+                    $('#file').val('');
+                    return;
+                }
           var filereader = new FileReader();
           filereader.onload = function(event){
              fileData  = event.target.result;
           };
-          myFile = $('#file').prop('files')[0];  
-          console.log('myfile',myFile)
-         filereader.readAsDataURL(myFile)
+          filereader.readAsDataURL(myFile);
+  
       });
       $('#upload').click(function(){
+        if (typeof myFile === 'undefined') {
+        alert('Please select a file.');
+        return;
+      }
+      var formData = new FormData();
+      formData.append('file', myFile);
+
           $.ajax({
               method:"post",
               url:"/upload",
-              dataType:"JSON",
-              data:{'filename':myFile.name,'file':fileData},
+
+      data: formData,
+      processData: false,
+      contentType: false,
+
+
               success:function(response){
                   if(response.msg=="success"){
                      alert('uploaded');
@@ -61,3 +78,6 @@
  </script>
 </body>
 </html>
+
+
+
