@@ -1,24 +1,32 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const csurf = require('csurf'); // Import csurf
 
 
 const db = require('../data/database');
 
 const router = express.Router();
+const csrfProtection = csurf(); // Initialize csrfProtection
 
 router.get('/', function (req, res) {
   res.render('welcome');
 });
 
 router.get('/signup', function (req, res) {
-  res.render('signup');
+  res.render('signup', { csrfToken: req.csrfToken() });  // Added: CSRF token
 });
 
 router.get('/login', function (req, res) {
   res.render('login');
 });
 
-router.post('/signup', async function (req, res) {
+router.post('/signup', csrfProtection, async function (req, res) {
+    // Validate CSRF token
+  if (!req.session || !req.session.csrfSecret || !req.body._csrf || req.body._csrf !== req.session.csrfSecret) {
+    console.log('Invalid CSRF token');
+    return res.status(403).redirect('/signup');
+  }
+
    const userData = req.body;
    const enteredEmail = userData.email;
    const enteredConfirmEmail = userData['confirm-email'];

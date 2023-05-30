@@ -3,6 +3,7 @@ const helmet = require("helmet");
 const express = require('express'); 
 const session = require('express-session');
 const mongodbStore = require('connect-mongodb-session');
+const csurf = require('csurf'); // Added: CSRF protection
 
 const db = require('./data/database');
 const demoRoutes = require('./routes/demo');
@@ -25,12 +26,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
 
+const csrfProtection = csurf(); // Initialize csrfProtection
+app.use(express.urlencoded({ extended: false }));
+
 app.use(session({
   secret: 'super-secret',
   resave: false,
   saveUninitialized: false,
   store: sessionStore
 }));
+
+app.use(csrfProtection); // Added: CSRF protection
 
 app.use(demoRoutes);
 
@@ -41,3 +47,7 @@ app.use(function(error, req, res, next) {
 db.connectToDatabase().then(function () {
   app.listen(3000);
 });
+
+
+
+
